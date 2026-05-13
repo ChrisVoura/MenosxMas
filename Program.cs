@@ -243,4 +243,4 @@ app.MapMethods("/api/carrito/eliminar", new[] { "GET", "POST" }, (HttpContext ct
     return Results.Ok("ok");
 });
 
-app.Run();
+app.Run();// cache bust mié 13 may 02:05:24 CST 2026

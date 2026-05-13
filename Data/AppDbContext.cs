@@ -4,7 +4,7 @@ namespace MiPrimeraWebApp.Data;
 
 public class AppDbContext : DbContext
 {
-    public AppDbContext(DbContextOptions<<AppDbContext> options) : base(options)
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
 
@@ -17,14 +17,13 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-
         modelBuilder.Entity<Producto>().ToTable("productos");
         modelBuilder.Entity<Cliente>().ToTable("clientes");
         modelBuilder.Entity<Pedido>().ToTable("pedidos");
         modelBuilder.Entity<ListaDeseo>().ToTable("listas_deseos");
         modelBuilder.Entity<Empleado>().ToTable("empleados");
         modelBuilder.Entity<Comentario>().ToTable("comentarios");
-       
+
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var property in entityType.GetProperties())
