@@ -1,0 +1,145 @@
+@page
+@model DetallesModel
+@{
+    ViewData["Title"] = "Detalles";
+}
+
+@if (Model.Producto == null)
+{
+    <div class="alert alert-warning">No se encontró el producto. Verifica el enlace.</div>
+}
+else
+{
+    var imageUrls = Model.Producto.ImageUrl?.Split(',').Select(url => url.Trim()).ToList() ?? new List<string>();
+    
+    <div class="d-flex flex-column align-items-center">
+        @if (imageUrls.Count > 0)
+        {
+            <div id="detailCarousel" class="carousel slide mb-4" data-bs-ride="carousel" style="max-width: 500px;">
+                <div class="carousel-inner">
+                    @for (int i = 0; i < imageUrls.Count; i++)
+                    {
+                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                            <img src="@imageUrls[i]" alt="@Model.Producto.Name"
+                                 style="height: 300px; object-fit: contain; width: 100%; display: block; margin: 0 auto;">
+                        </div>
+                    }
+                </div>
+                @if (imageUrls.Count > 1)
+                {
+                    <button class="carousel-control-prev" type="button" data-bs-target="#detailCarousel" data-bs-slide="prev"
+                            id="carritoIcon">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#detailCarousel" data-bs-slide="next"
+                            id="carritoIcon">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    </button>
+                }
+            </div>
+        }
+
+        <div class="card mb-5" style="max-width: 700px; width: 100%;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2>@Model.Producto.Name</h2>
+                <button type="button" class="btn btn-link p-0" onclick="agregarALista(@Model.Producto.Id, event)"
+                        title="Agregar a mi lista">
+                    <img width="40" height="40" src="https://img.icons8.com/parakeet-line/48/hearts.png" alt="hearts" />
+                </button>
+            </div>
+            <div class="card-body">
+                <p><strong>Categoría:</strong> @Model.Producto.Category</p>
+                <p><strong>Descripción:</strong> @Model.Producto.Description</p>
+                @if (Model.Producto.DescuentoActivo)
+                {
+                    var descuento = Model.Producto.PorcentajeDescuento > 0 ? Model.Producto.PorcentajeDescuento : 50;
+                    var precioDescuento = Model.Producto.Price * (1 - descuento / 100m);
+                    <p class="text-muted text-decoration-line-through"><strong>Precio:</strong>
+                        ₡@Model.Producto.Price.ToString("F3")</p>
+                        <p class="text-danger"><strong>Precio:</strong> ₡@precioDescuento.ToString("F3") <span
+                            class="badge bg-danger">@descuento% OFF</span></p>
+                        }
+            else
+                        {
+                            <p><strong>Precio:</strong> ₡@Model.Producto.Price.ToString("F3")</p>
+                        }
+                    </div>
+                    <div class="card-footer">
+                        <button type="button" class="btn btn-success" onclick="agregarAlCarrito(@Model.Producto.Id)">Agregar al
+                            Carrito</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#demo">Escribe un comentario</button>
+                        <form method="post" asp-page="/Detalles" asp-page-handler="AgregarComentario">
+                            <input type="hidden" name="ProductoId" value="@Model.Producto.Id" />
+                            
+
+                            <div id="demo" class="collapse">
+                                <br/>
+                                <label for="">Escribe un comentario</label>
+                                <input type="text" id="descripcion" name="Descripcion" class="form-control" />
+                                <br/>
+                                <label for="valor">Calificación</label>
+                                <input type="hidden" id="valor" name="valor" value="0" />
+                                <div class="mb-2">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <span class="star" style="font-size: 24px; cursor: pointer; color: #ccc;" data-value="@i" onclick="setValor(@i)">★</span>
+                                    }
+                                </div>
+                                <button type="submit" class="btn btn-success mt-2">Guardar Comentario</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="mt-4" style="max-width: 700px; width: 100%;">
+                        <h4>Comentarios</h4>
+                        @if (Model.Comentarios.Any())
+                        {
+                            @foreach (var comentario in Model.Comentarios)
+                            {
+                                <div class="card mb-2">
+                                    <div class="card-body">
+                                        <h6 class="card-title">@Model.NombresClientes.GetValueOrDefault(comentario.ClienteId, "Usuario")</h6>
+                                        <p>@comentario.Descripcion</p>
+                                        <small class="text-muted">
+                                            @for (int i = 0; i < 5; i++)
+                                            {
+                                                <span class="@(i < comentario.valor ? "text-warning" : "text-muted")">★</span>
+                                            }
+                                            - @comentario.FechaCreaciacion.ToString("dd/MM/yyyy")
+                                        </small>
+                                        @if (comentario.ClienteId == Model.ClienteIdActual)
+                                        {
+                                            <form method="post" asp-page="/Detalles" asp-page-handler="EliminarComentario" class="d-inline">
+                                                <input type="hidden" name="ComentarioId" value="@comentario.Id" />
+                                                <input type="hidden" name="ProductoId" value="@Model.Producto.Id" />
+                                                <button type="submit" class="btn btn-danger btn-sm float-end">Eliminar</button>
+                                            </form>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted">No hay comentarios todavía.</p>
+                        }
+                    </div>
+                </div>
+            }
+    </div>
+
+@section Scripts {
+    <script>
+        function setValor(valor) {
+            document.getElementById('valor').value = valor;
+            var stars = document.querySelectorAll('.star');
+            stars.forEach(function(star, index) {
+                star.style.color = index < valor ? '#ffc107' : '#ccc';
+            });
+        }
+    </script>
+}

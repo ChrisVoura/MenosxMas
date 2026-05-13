@@ -1,0 +1,75 @@
+@page
+@model AbarrotesModel
+@{
+    ViewData["Title"] = "Abarrotes";
+}
+
+<h1>@ViewData["Title"]</h1>
+<p>En esta sección encontrarás una variedad de productos de abarrotes para tu hogar</p>
+
+@Html.ValidationSummary(false, "", new { @class = "text-danger" })
+
+<div class="row g-2">
+    @foreach (var producto in Model.Productos)
+    {
+        <div class="col-md-3">
+            <div class="card h-100 product-card">
+                <a asp-page="/Detalles" asp-route-id="@producto.Id">
+                <div class="card-header product-image-container">
+                    @{
+                        var imageUrls = producto.ImageUrl?.Split(',').Select(url => url.Trim()).ToList() ?? new List<string>();
+                    }
+                    @if (imageUrls.Count > 0)
+                    {
+                        <img src="@imageUrls[0]" alt="@producto.Name" class="product-image">
+                    }
+                </div>
+                </a>
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="card-title product-name">@producto.Name</h5>
+                        <button type="button" class="btn btn-link p-0" onclick="agregarALista(@producto.Id, event)" title="Agregar a mi lista">
+                            <img width="30" height="30" src="https://img.icons8.com/parakeet-line/48/hearts.png" alt="hearts"/>
+                        </button>
+                    </div>
+                            <p class="card-text truncate-description">@producto.Description</p>
+                    <div class="mt-auto">
+                        @if (producto.DescuentoActivo)
+                        {
+                            var descuento = producto.PorcentajeDescuento > 0 ? producto.PorcentajeDescuento : 50;
+                            var precioDescuento = producto.Price * (1 - descuento / 100m);
+                            <p class="product-price text-muted text-decoration-line-through"><strong>₡@producto.Price.ToString("F3")</strong></p>
+                            <p class="product-price text-danger"><strong>₡@precioDescuento.ToString("F3")</strong> <span class="badge bg-danger">@descuento% OFF</span></p>
+                        }
+                        else
+                        {
+                            <p class="product-price"><strong>₡@producto.Price.ToString("F3")</strong></p>
+                        }
+                    </div>
+                    <div class="mt-2">
+                        <span class="badge bg-primary">
+                            @if (producto.Stock > 0)
+                            {
+                                @($"Hay existencias")
+                            }
+                            else
+                            {
+                                @("Agotado")
+                            }
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer border-top">
+                    @if(producto.Stock > 0)
+                        {
+                            <button type="button" class="btn btn-primary w-100" onclick="agregarAlCarrito(@producto.Id)">+ Agregar</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-secondary w-100" disabled>Agotado</button>
+                        }
+                </div>
+            </div>
+        </div>
+    }
+</div>

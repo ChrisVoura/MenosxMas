@@ -1,0 +1,195 @@
+﻿@{
+    var usuarioRol = Context.Session.GetString("UsuarioRol");
+    var usuarioNombre = Context.Session.GetString("UsuarioNombre");
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Tienda MenosxMas</title>
+    <script>
+            (function () {
+                var savedTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-bs-theme', savedTheme);
+                document.documentElement.classList.add('theme-ready');
+            })();
+    </script>
+    <script type="importmap"></script>
+    <link rel="icon" type="image/png" href="~/logo.png?v=1" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300..900&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+
+
+<body class="d-flex flex-column min-vh-100">
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" id="layoutLink" asp-area="" asp-page="/Index">MenosxMas</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        @if (usuarioRol == null || usuarioRol == "Cliente" || usuarioRol == "Administrador")
+                        {
+                            <li class="nav-item">
+                                <a id="layoutLink" class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
+                            </li>
+                        }
+                        @if (usuarioRol == "Administrador")
+                        {
+                            <li class="nav-item">
+                                <a id="layoutLink" class="nav-link text-dark" asp-area=""
+                                   asp-page="/Dashboard">Dashboard</a>
+                            </li>
+                        }
+                        @if (usuarioRol == "Empleado")
+                        {
+                            <li class="nav-item">
+                                <a id="layoutLink" class="nav-link text-dark" asp-area=""
+                                   asp-page="/DashboardEmpleado">Dashboard</a>
+                            </li>
+                        }
+                        @if (usuarioRol == "Empleado")
+                        {
+                            <li class="nav-item">
+                                <a id="layoutLink" class="nav-link text-dark" asp-area=""
+                                   asp-page="/Productos">Productos</a>
+                            </li>
+                        }
+                        @if (usuarioRol == "Cliente" || usuarioRol == null)
+                        {
+                            <li class="nav-item">
+                                <a id="layoutLink" class="nav-link text-dark" asp-area="" asp-page="/Cuentas">Mi Cuenta</a>
+                            </li>
+                        }
+                    </ul>
+                    <div class="d-flex align-items-center">
+                        <form class="d-flex" asp-page="/Buscar" method="get">
+                            <input class="form-control me-2" type="text" name="query" placeholder="Buscar">
+                            <button class="btn btn-primary" type="submit" style="margin: 0 20px 0 0;">Buscar</button>
+                        </form>
+                    </div>
+
+                    <div>
+                        <button id="carritoBtn" class="btn ms-auto me-3" type="button" data-bs-toggle="offcanvas"
+                                data-bs-target="#carritoOffcanvas">
+                            <img id="carritoIcon" width="40" height="40"
+                                 src="https://img.icons8.com/keek-line/48/shopping-cart.png" alt="shopping-cart" />
+                        </button>
+                    </div>
+                    
+                    <div class="form-check form-switch ms-auto me-3">
+                        <input class="form-check-input" type="checkbox" role="switch" id="themeSwitch">
+                        <label class="form-check-label" for="themeSwitch">
+                            <i class="bi bi-sun-fill text-warning" id="themeIcon"></i>
+                        </label>
+                    </div>
+                    <div>
+                        @if (!string.IsNullOrEmpty(usuarioNombre))
+                        {
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                    @usuarioNombre
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li style="margin-left: 15px;">
+                                        @usuarioRol
+                                    </li>
+                                    <li>
+                                        <form method="post" asp-page="/Logout">
+                                            <button type="submit" class="dropdown-item text-danger">Cerrar Sesión</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <a id="layoutLink" class="nav-link text-dark" asp-area="" asp-page="/LoginPersonal">Personal</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Offcanvas del Carrito -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="carritoOffcanvas">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Mi Carrito</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column p-0" id="carritoContenido">
+        </div>
+    </div>
+    
+    <main role="main" class="container flex-grow-1 pb-5">
+        @Html.AntiForgeryToken()
+        @RenderBody()
+    </main>
+
+    <footer class="footer text-muted">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5>MenosxMas</h5>
+                    <p class="small mb-0">Tu tienda de conveniencia online con los mejores productos al mejor precio.</p>
+                    <div class="social-links mt-3">
+                        <a href="#" title="Facebook"><span><img width="35" height="35" src="https://img.icons8.com/stickers/100/facebook.png" alt="facebook"/></span></a>
+                        <a href="#" title="Instagram"><span><img width="35" height="35" src="https://img.icons8.com/stickers/100/instagram-new--v2.png" alt="instagram-new--v2"/></span></a>
+                        <a href="#" title="WhatsApp"><span><img width="35" height="35" src="https://img.icons8.com/stickers/100/whatsapp.png" alt="whatsapp"/></span></a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5>Enlaces Rápidos</h5>
+                    <ul class="small">
+                        <li><a asp-page="/Index">Inicio</a></li>
+                        <li><a asp-page="/Buscar">Buscar Productos</a></li>
+                        <li><a asp-page="/Cuentas">Mi Cuenta</a></li>
+                        <li><a asp-page="/Contacto">Contáctanos</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Categorías</h5>
+                    <ul class="small">
+                        <li><a href="/Abarrotes">Abarrotes</a></li>
+                        <li><a href="/FrutasYVerduras">Frutas y Verduras</a></li>
+                        <li><a href="/LacteosYHuevos">Lácteos y Huevos</a></li>
+                        <li><a href="/CarnesYPescado">Carnes y Pescado</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                &copy; 2026 MenosxMas. Todos los derechos reservados. 
+                <a asp-page="/Privacy" class="ms-2">Privacidad</a> | 
+                <a asp-page="/Contacto" class="ms-2">Contacto</a>
+            </div>
+        </div>
+    </footer>
+
+    <div class="toast-container" style="z-index: 9999;">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-body"></div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

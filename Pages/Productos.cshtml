@@ -1,0 +1,229 @@
+@page
+@model ProductosModel
+@{
+    ViewData["Title"] = "Productos";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@Html.ValidationSummary(false, "", new { @class = "text-danger" })
+
+<div class="mb-5 table-responsive">
+    <form method="post">
+        <p>En esta sección agrega productos a tu catálogo</p>
+        <input type="text" id="nombre" name="Nombre" class="form-control" placeholder="Nombre del producto" />
+        <br />
+        <input type="number" id="precio" name="Precio" class="form-control" step="0.01"
+               placeholder="Precio del producto" />
+        <br />
+        <input type="text" id="descripcion" name="Descripcion" class="form-control"
+               placeholder="Descripción del producto" />
+        <br />
+        <select id="categoria" name="Categoria" class="form-control">
+            <option value="">Selecciona una categoría</option>
+            <option value="Abarrotes">Abarrotes</option>
+            <option value="Lácteos">Lácteos</option>
+            <option value="Carnes">Carnes</option>
+            <option value="Bebidas">Bebidas</option>
+            <option value="Limpieza">Limpieza</option>
+            <option value="Cerveza">Cerveza</option>
+            <option value="Vino">Vino</option>
+            <option value="Licores">Licores</option>
+            <option value="Pescados">Pescados</option>
+            <option value="Frutas">Frutas</option>
+            <option value="Verduras">Verduras</option>
+            <option value="Higiene">Higiene</option>
+            <option value="Belleza">Belleza</option>
+            <option value="Jugos">Jugos</option>
+            <option value="Huevos">Huevos</option>
+        </select>
+        <br />
+        <p><strong>URLs de las imágenes </strong></p>
+        <input type="text" id="imageUrl1" name="ImageUrl1" class="form-control" placeholder="URL de la imagen 1" />
+        <br />
+        <input type="text" id="imageUrl2" name="ImageUrl2" class="form-control" placeholder="URL de la imagen 2" />
+        <br />
+        <input type="text" id="imageUrl3" name="ImageUrl3" class="form-control" placeholder="URL de la imagen 3" />
+        <br />
+        <input type="number" id="stock" name="Stock" class="form-control" placeholder="Stock del producto" />
+        <br />
+        <button type="submit" class="btn btn-primary">Agregar producto</button>
+    </form>
+    <br />
+ 
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Descripción</th>
+                <th>Categoría</th>
+                <th>Stock</th>
+                <th>Descuento</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                string[] GetUrls(string? urls) => string.IsNullOrWhiteSpace(urls) ? new string[3] : urls.Split(',');
+            }
+
+            @foreach (var producto in Model.Productos)
+            {
+                var urls = GetUrls(producto.ImageUrl);
+                <tr>
+                    <td>@producto.Id</td>
+                    <td>@producto.Name</td>
+                    <td>₡@producto.Price.ToString("F3") </td>
+                    <td class="truncate-table">@producto.Description</td>
+                    <td>@producto.Category</td>
+                    <td>@producto.Stock</td>
+                    <td>
+                        <div class="form-check">
+                            <input class="form-check-input descuento-checkbox" type="checkbox" 
+                                   data-id="@producto.Id"
+                                   @(producto.DescuentoActivo ? "checked" : "")>
+                        </div>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal"
+                                data-bs-target="#editModal" data-id="@producto.Id" data-name="@producto.Name"
+                                data-price="@producto.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                data-description="@producto.Description" data-category="@producto.Category"
+                                data-imageurl1="@urls.ElementAtOrDefault(0)" data-imageurl2="@urls.ElementAtOrDefault(1)"
+                                data-imageurl3="@urls.ElementAtOrDefault(2)" data-stock="@producto.Stock"
+                                data-descuentoactivo="@producto.DescuentoActivo" data-porcentajedescuento="@producto.PorcentajeDescuento">Editar</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                                data-bs-target="#deleteModal" data-id="@producto.Id"
+                                data-name="@producto.Name">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que quieres eliminar el producto <strong id="productName"></strong>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="post" asp-page-handler="Delete" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de edición -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Editar producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm" method="post" asp-page-handler="Editar">
+                    <input type="hidden" id="editId" name="Id" />
+                    <div class="mb-3">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" id="editNombre" name="Nombre" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Precio</label>
+                        <input type="number" id="editPrecio" name="Precio" class="form-control" step="0.01" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <input type="text" id="editDescripcion" name="Descripcion" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Categoría</label>
+                        <select id="editCategoria" name="Categoria" class="form-control">
+                            <option value="Abarrotes">Abarrotes</option>
+                            <option value="Lácteos">Lácteos</option>
+                            <option value="Carnes">Carnes</option>
+                            <option value="Bebidas">Bebidas</option>
+                            <option value="Limpieza">Limpieza</option>
+                            <option value="Cerveza">Cerveza</option>
+                            <option value="Vino">Vino</option>
+                            <option value="Licores">Licores</option>
+                            <option value="Pescados">Pescados</option>
+                            <option value="Frutas">Frutas</option>
+                            <option value="Verduras">Verduras</option>
+                            <option value="Higiene">Higiene</option>
+                            <option value="Belleza">Belleza</option>
+                            <option value="Jugos">Jugos</option>
+                            <option value="Huevos">Huevos</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">URL imagen 1</label>
+                        <input type="text" id="editImageUrl1" name="ImageUrl1" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">URL imagen 2</label>
+                        <input type="text" id="editImageUrl2" name="ImageUrl2" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">URL imagen 3</label>
+                        <input type="text" id="editImageUrl3" name="ImageUrl3" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Stock</label>
+                        <input type="number" id="editStock" name="Stock" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="editDescuentoActivo" name="DescuentoActivoCheckbox">
+                            <label class="form-check-label">Activar Descuento</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Porcentaje Descuento (%)</label>
+                        <input type="number" id="editPorcentajeDescuento" name="PorcentajeDescuento" class="form-control" min="1" max="99" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="editForm" class="btn btn-primary">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const editModal = document.getElementById('editModal');
+        if (editModal) {
+            editModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                if (button) {
+                    document.getElementById('editId').value = button.getAttribute('data-id') || '';
+                    document.getElementById('editNombre').value = button.getAttribute('data-name') || '';
+                    document.getElementById('editPrecio').value = button.getAttribute('data-price') || '';
+                    document.getElementById('editDescripcion').value = button.getAttribute('data-description') || '';
+                    document.getElementById('editCategoria').value = button.getAttribute('data-category') || '';
+                    document.getElementById('editImageUrl1').value = button.getAttribute('data-imageurl1') || '';
+                    document.getElementById('editImageUrl2').value = button.getAttribute('data-imageurl2') || '';
+                    document.getElementById('editImageUrl3').value = button.getAttribute('data-imageurl3') || '';
+                    document.getElementById('editStock').value = button.getAttribute('data-stock') || '';
+                    document.getElementById('editDescuentoActivo').checked = button.getAttribute('data-descuentoactivo') === 'True';
+                    document.getElementById('editPorcentajeDescuento').value = button.getAttribute('data-porcentajedescuento') || '50';
+                }
+            });
+        }
+    });
+</script>

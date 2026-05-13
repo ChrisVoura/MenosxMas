@@ -1,0 +1,89 @@
+@page
+@model EmpleadosModel
+@{
+    ViewData["Title"] = "Empleados";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <h2>Agregar Nuevo Empleado</h2>
+        <form method="post">
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <input asp-for="NuevoEmpleado.Nombre" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Apellido</label>
+                <input asp-for="NuevoEmpleado.Apellido" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input asp-for="NuevoEmpleado.Email" type="email" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input asp-for="NuevoEmpleado.Password" type="password" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Rol</label>
+                <select asp-for="NuevoEmpleado.Rol" class="form-select" style="width: 400px;">
+                    <option value="Empleado">Empleado</option>
+                    <option value="Administrador">Administrador</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Puesto</label>
+                <input asp-for="NuevoEmpleado.Puesto" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Salario</label>
+                <input asp-for="NuevoEmpleado.Salario" type="number" step="0.01" class="form-control" />
+            </div>
+            <button type="submit" class="btn btn-primary">Crear Empleado</button>
+        </form>
+    </div>
+    <div class="col-md-6">
+        <h2>Lista de Empleados</h2>
+        <table class="table table-hover table-responsive">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Fecha de Contratación</th>
+                    <th>Fecha de Despido</th>
+                    <th>Puesto</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var emp in Model.listaEmpleados)
+                {
+                    if(emp.Rol == "Empleado"){
+                    <tr>
+                        <td>@emp.Nombre @emp.Apellido</td>
+                        <td>@emp.Email</td>
+                        <td>@emp.FechaContratacion.ToString("yyyy-MM-dd")</td>
+                        <td>@if(emp.FechaDespido == null)
+                            {
+                                <span class="badge bg-success">Activo</span>
+                            }
+                            else
+                            {
+                                emp.FechaDespido?.ToString("yyyy-MM-dd");
+                            }
+                        </td>
+                        <td>@emp.Puesto</td>
+                        <td>
+                            <form method="post" asp-page-handler="Eliminar" onsubmit="return confirm('¿Confirma que desea eliminar este empleado?');">
+                                <input type="hidden" name="id" value="@emp.Id" />
+                                <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                             </form>
+                        </td>
+                    </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

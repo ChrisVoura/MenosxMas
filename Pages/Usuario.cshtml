@@ -1,0 +1,65 @@
+@page
+@model UsuarioModel
+@{
+    ViewData["Title"] = "Crear Cuenta";
+}
+
+<div class="d-flex align-items-center justify-content-center" style="min-height: 70vh;">
+    <div class="col-md-4">
+        <h1 class="text-center mb-4">@ViewData["Title"]</h1>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <p>@error.ErrorMessage</p>
+                }
+            </div>
+        }
+
+        <form method="post">
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <input type="text" class="form-control" name="Name" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Apellido</label>
+                <input type="text" class="form-control" name="Apellido" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" name="Email" value="@Model.EmailPrefllenado" readonly />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Contraseña</label>
+                <div class="input-group">
+                    <input type="password" id="passwordInput" class="form-control" name="Password" required 
+                           pattern="^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}$"
+                           title="La contraseña debe tener al menos 12 caracteres, una mayúscula, un número y un carácter especial" />
+                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                        <span id="eyeIcon">👁️</span>
+                    </button>
+                </div>
+                <div class="form-text">Mínimo 12 caracteres, una mayúscula, un número y un carácter especial</div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Crear Cuenta</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const input = document.getElementById('passwordInput');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                icon.textContent = '👁️';
+            }
+        });
+    </script>
+}

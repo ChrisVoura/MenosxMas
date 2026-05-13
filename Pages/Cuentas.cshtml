@@ -1,0 +1,272 @@
+@page
+@model CuentasModel
+@{
+    ViewData["Title"] = "Mi Cuenta";
+}
+
+<br/>
+<h3>Hola, @Model.NombreUsuario</h3>
+<br/>
+<div class="row">
+    <div class="col-md-3">
+        <ul class="nav flex-column nav-pills mb-3 gap-4" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link nav-link-custom active" id="pills-perfil-tab" data-bs-toggle="pill" data-bs-target="#pills-perfil" type="button">Perfil</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link nav-link-custom" id="pills-direcciones-tab" data-bs-toggle="pill" data-bs-target="#pills-direcciones" type="button">Mis Direcciones</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link nav-link-custom" id="pills-pedidos-tab" data-bs-toggle="pill" data-bs-target="#pills-pedidos" type="button">Mis Pedidos</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link nav-link-custom" id="pills-lista-tab" data-bs-toggle="pill" data-bs-target="#pills-lista" type="button">Mi Lista</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link nav-link-custom text-danger" id="pills-cerrar-tab" data-bs-toggle="pill" data-bs-target="#pills-cerrar" type="button">Cerrar Sesión</button>
+            </li>
+        </ul>
+    </div>
+    <div class="col-md-9">
+        <div class="tab-content" id="pills-tabContent">
+            <div class="tab-pane fade show active" id="pills-perfil" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Datos Personales</h5>
+                       <img width="40" height="40" src="https://img.icons8.com/stickers/100/create-new.png" alt="create-new" style="cursor: pointer;" onclick="habilitarEdicion()" />
+                    </div>
+                    <div class="card-body">
+                        <form method="post" asp-page-handler="Actualizar" id="perfilForm">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="Nombre" id="hiddenNombre" value="@Model.Nombre" />
+                            <input type="hidden" name="Apellido" id="hiddenApellido" value="@Model.Apellido" />
+                            <input type="hidden" name="Email" id="hiddenEmail" value="@Model.Email" />
+                            <input type="hidden" name="Telefono" id="hiddenTelefono" value="@Model.Telefono" />
+                            <input type="hidden" name="Genero" id="hiddenGenero" value="@Model.Genero" />
+                            <input type="hidden" name="FechaNacimiento" id="hiddenFechaNacimiento" value="@Model.FechaNacimiento?.ToString("yyyy-MM-dd")" />
+                            <div class="mb-3">
+                                <label class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="nombreInput" value="@Model.Nombre" readonly />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Apellido</label>
+                                <input type="text" class="form-control" id="apellidoInput" value="@Model.Apellido" readonly />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Correo</label>
+                                <input type="email" class="form-control" id="emailInput" value="@Model.Email" readonly />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Telefono</label>
+                                <input type="text" class="form-control" id="telefonoInput" value="@Model.Telefono" readonly placeholder="Opcional" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Género</label>
+                                <select class="form-select" id="generoInput" disabled >
+                                    <option value="Masculino" selected="@(Model.Genero == "Masculino")">Masculino</option>
+                                    <option value="Femenino" selected="@(Model.Genero == "Femenino")">Femenino</option>
+                                    <option value="No especificado" selected="@(Model.Genero == "No especificado")">No especificado</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">Fecha de Nacimiento</label>
+                                <input type="date" class="form-control" id="fechaNacimientoInput" value="@Model.FechaNacimiento?.ToString("yyyy-MM-dd")" readonly placeholder="Opcional"/>
+                            </div>
+                            <br/>
+                            <div class="mb-3" id="saveButton" style="display: none;">
+                                <button type="submit" class="btn btn-primary">Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="pills-direcciones" role="tabpanel">
+                <div>
+                    <button class="btn btn-outline-primary mb-3" id="addDireccionBtn">+ Agregar Dirección</button>
+                    <div id="nuevaDireccionForm" style="display: none;">
+                        <form method="post" asp-page-handler="AgregarDireccion">
+                            @Html.AntiForgeryToken()
+                            <div class="mb-3">
+                                <label class="form-label">Dirección</label>
+                                <input type="text" class="form-control" id="direccionInput" name="NuevaDireccion" placeholder="Ingrese su dirección" />
+                            </div>
+                            <button type="submit" class="btn btn-primary">Agregar Dirección</button>
+                        </form>
+                    </div>
+                </div>
+                <br/>
+                @if(@Model.Direcciones == null || !Model.Direcciones.Any()){
+                    <div class="alert alert-info">No tienes direcciones guardadas aún.</div>
+                }else{
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Mis Direcciones</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group">
+                                    @foreach(var dir in Model.Direcciones)
+                                    {
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            @dir
+                                            <form method="post" asp-page-handler="EliminarDireccion" class="mb-0">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="Direccion" value="@dir" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                            </form>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                }
+
+            </div>
+            <div class="tab-pane fade" id="pills-pedidos" role="tabpanel">
+                @if(Model.Pedidos == null || !Model.Pedidos.Any())
+                {
+                    <div class="alert alert-info">No has realizado pedidos aún.</div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Id Pedido</th>
+                                    <th>Fecha</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach(var pedido in Model.Pedidos)
+                                {
+                                    <tr>
+                                        <td>@pedido.Id</td>
+                                        <td>@pedido.FechaPedido.ToString("dd/MM/yyyy")</td>
+                                        <td>₡@pedido.Total.ToString("F3")</td>
+                                        <td>@pedido.Estado</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+            <div class="tab-pane fade" id="pills-lista" role="tabpanel">
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearListaModal">+ Crear Lista</button>
+                
+                <div class="modal fade" id="crearListaModal" tabindex="-1" aria-labelledby="crearListaModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="crearListaModalLabel">Crear nueva lista</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="post" asp-page-handler="CrearLista" id="crearListaForm">
+                                    @Html.AntiForgeryToken()
+                                    <div class="mb-3">
+                                        <label class="form-label">Nombre de la lista</label>
+                                        <input type="text" class="form-control" name="NuevaListaNombre" placeholder="Ej: Mis favoritos" required />
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" form="crearListaForm" class="btn btn-primary">Crear</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if(Model.ListasDeseos == null || !Model.ListasDeseos.Any()){
+                    <div class="alert alert-info">No tienes listas creadas aún.</div>
+                }else{
+                    @foreach(var lista in Model.ListasDeseos)
+                    {
+                        var productos = lista.Productos;
+                        
+                        <div class="card mb-3">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5>@lista.Lista.Nombre</h5>
+                                <div>
+                                    <span class="badge bg-secondary me-2">@productos.Count productos</span>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarLista(@lista.Lista.Id, this)">Eliminar</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                @if(productos.Any()){
+                                    <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-2">
+                                        @foreach(var prod in productos){
+                                            <div class="col">
+                                                <div class="card h-100">
+                                                    <img src="@prod.ImageUrl?.Split(',').FirstOrDefault()" class="card-img-top" alt="@prod.Name" style="height: 120px; object-fit: contain;">
+                                                    <div class="card-body p-2">
+                                                        <h6 class="card-title" style="font-size: 0.85rem;">@prod.Name</h6> 
+                                                        <p class="card-text mb-1" style="font-size: 0.9rem;">₡@prod.Price.ToString("F3")</p>
+                                                    </div>
+                                                    <div class="p-2 pt-0">
+                                                        <form method="post" asp-page-handler="EliminarDeLista" class="mb-0">
+                                                            @Html.AntiForgeryToken()
+                                                            <input type="hidden" name="ProductoId" value="@prod.Id" />
+                                                            <input type="hidden" name="ListaId" value="@lista.Lista.Id" />
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger w-100">Eliminar</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="mt-3 text-end">
+                                            <button class="btn btn-success" onclick="agregarListaAlCarrito(@lista.Lista.Id)">Agregar Lista al Carrito</button>
+                                    </div>
+                                }else{
+                                    <p class="text-muted">Esta lista está vacía.</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+            <div class="tab-pane fade" id="pills-cerrar" role="tabpanel">
+                <div class="text-center">
+                    <h4>¿Estás seguro de que quieres cerrar sesión?</h4>
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-secondary me-2" onclick="document.querySelector('#pills-perfil-tab').click()">Cancelar</button>
+                        <form method="post" asp-page-handler="Logout" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger">Cerrar Sesión</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function habilitarEdicion() {
+            var inputs = ['nombreInput', 'apellidoInput', 'emailInput', 'telefonoInput', 'fechaNacimientoInput'];
+            inputs.forEach(function(id) {
+                var el = document.getElementById(id);
+                el.removeAttribute('readonly');
+                el.style.borderColor = '#0d6efd';
+            });
+            document.getElementById('generoInput').removeAttribute('disabled');
+            document.getElementById('generoInput').style.borderColor = '#0d6efd';
+            document.getElementById('saveButton').style.display = 'block';
+            
+            document.getElementById('perfilForm').addEventListener('submit', function() {
+                document.getElementById('hiddenNombre').value = document.getElementById('nombreInput').value;
+                document.getElementById('hiddenApellido').value = document.getElementById('apellidoInput').value;
+                document.getElementById('hiddenEmail').value = document.getElementById('emailInput').value;
+                document.getElementById('hiddenTelefono').value = document.getElementById('telefonoInput').value;
+                document.getElementById('hiddenGenero').value = document.getElementById('generoInput').value;
+                document.getElementById('hiddenFechaNacimiento').value = document.getElementById('fechaNacimientoInput').value;
+            });
+        }
+    </script>
+}

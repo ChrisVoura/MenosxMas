@@ -1,0 +1,55 @@
+@page
+@model ClientesModel
+@{
+    ViewData["Title"] = "Clientes";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["Success"]
+    </div>
+}
+
+@Html.ValidationSummary(false, "", new { @class = "text-danger" })
+
+@if(Model.Clientes?.Any() == true)
+{
+    <div class="table-responsive mb-5">
+    <Table class = "table table-hover ">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Fecha de Registro</th>
+                <th>Dirección</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var cliente in Model.Clientes)
+            {
+                @if(cliente.Rol == "Cliente"){
+                <tr>
+                    <td>@cliente.Id</td>
+                    <td>@cliente.Name @cliente.Apellido</td>
+                    <td>@cliente.Email</td>
+                    <td>@cliente.FechaRegistro.ToString("dd/MM/yyyy")</td>
+                    <td>@cliente.Direccion</td>
+                    <td>
+                        <form method="post" asp-page-handler="Delete" onsubmit="return confirm('¿Confirma que desea eliminar este cliente?');">
+                            <input type="hidden" name="id" value="@cliente.Id" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                }
+            }
+        </tbody>
+    </Table>
+    </div>
+}else if (Model.Clientes == null){
+    <div class="alert alert-info">No hay clientes aún.</div>
+}

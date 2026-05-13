@@ -1,0 +1,177 @@
+@page
+@model DashboardModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var isAdmin = Model.UsuarioRol == "Administrador";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">Panel de @(isAdmin ? "Administración" : "Empleado")</h1>
+            <p class="text-muted mb-0">Resumen general del sistema</p>
+        </div>
+        <div class="text-end">
+            <small class="text-muted">@DateTime.Now.ToString("dddd, d 'de' MMMM 'de' yyyy")</small>
+        </div>
+    </div>
+    
+    @if (isAdmin)
+    {
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 hover-lift" style="border-radius: 16px;">
+                <div class="card-body d-flex align-items-center">
+                    <div class="bg-primary bg-opacity-10 rounded-3 p-3 me-3" style="width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-people-fill text-primary" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted text-uppercase fw-medium d-block">Clientes</small>
+                        <h3 class="mb-0 fw-bold">@Model.TotalClientes</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 hover-lift" style="border-radius: 16px;">
+                <div class="card-body d-flex align-items-center">
+                    <div class="bg-success bg-opacity-10 rounded-3 p-3 me-3" style="width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-person-badge-fill text-success" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted text-uppercase fw-medium d-block">Empleados</small>
+                        <h3 class="mb-0 fw-bold text-success">@Model.TotalEmpleados</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 hover-lift" style="border-radius: 16px;">
+                <div class="card-body d-flex align-items-center">
+                    <div class="bg-warning bg-opacity-10 rounded-3 p-3 me-3" style="width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-box-seam-fill text-warning" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted text-uppercase fw-medium d-block">Productos</small>
+                        <h3 class="mb-0 fw-bold text-warning">@Model.TotalProductos</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 hover-lift @(Model.ProductosStockBajo > 0 ? "border-start border-4 border-danger" : "")" style="border-radius: 16px;">
+                <div class="card-body d-flex align-items-center">
+                    <div class="bg-danger bg-opacity-10 rounded-3 p-3 me-3" style="width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted text-uppercase fw-medium d-block">Stock Bajo</small>
+                        <h3 class="mb-0 fw-bold text-danger">@Model.ProductosStockBajo</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+    else
+    {
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100 hover-lift" style="border-radius: 16px;">
+                <div class="card-body d-flex align-items-center">
+                    <div class="bg-warning bg-opacity-10 rounded-3 p-3 me-3" style="width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-box-seam-fill text-warning" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted text-uppercase fw-medium d-block">Total Productos</small>
+                        <h3 class="mb-0 fw-bold">@Model.TotalProductos</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100 hover-lift @(Model.ProductosStockBajo > 0 ? "border-start border-4 border-danger" : "")" style="border-radius: 16px;">
+                <div class="card-body d-flex align-items-center">
+                    <div class="bg-danger bg-opacity-10 rounded-3 p-3 me-3" style="width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted text-uppercase fw-medium d-block">Stock Bajo</small>
+                        <h3 class="mb-0 fw-bold text-danger">@Model.ProductosStockBajo</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                <div class="card-header bg-transparent border-0 pt-4 px-4">
+                    <h5 class="mb-1 fw-bold">Acciones Rápidas</h5>
+                    <small class="text-muted">Accede rápidamente a las funciones principales</small>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div class="d-grid gap-3">
+                        @if (isAdmin)
+                        {
+                        <a asp-page="/Clientes" class="btn btn-outline-primary btn-lg d-flex align-items-center justify-content-between py-3">
+                            <span><i class="bi bi-people me-2"></i>Gestionar Clientes</span>
+                            <i class="bi bi-arrow-right text-muted"></i>
+                        </a>
+                        <a asp-page="/Empleados" class="btn btn-outline-success btn-lg d-flex align-items-center justify-content-between py-3">
+                            <span><i class="bi bi-person-badge me-2"></i>Gestionar Empleados</span>
+                            <i class="bi bi-arrow-right text-muted"></i>
+                        </a>
+                        }
+                        <a asp-page="/Productos" class="btn btn-outline-warning btn-lg d-flex align-items-center justify-content-between py-3">
+                            <span><i class="bi bi-box-seam me-2"></i>Gestionar Productos</span>
+                            <i class="bi bi-arrow-right text-muted"></i>
+                        </a>
+                        <a asp-page="/Index" class="btn btn-outline-secondary btn-lg d-flex align-items-center justify-content-between py-3">
+                            <span><i class="bi bi-shop me-2"></i>Ver Tienda</span>
+                            <i class="bi bi-arrow-right text-muted"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                <div class="card-header bg-transparent border-0 pt-4 px-4">
+                    <h5 class="mb-1 fw-bold">Información del Sistema</h5>
+                    <small class="text-muted">Detalles de tu sesión actual</small>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 rounded-3" style="background-color: var(--bs-body-bg); border: 1px solid var(--bs-border-color);">
+                                <small class="text-muted d-block mb-1">Usuario</small>
+                                <span class="fw-bold">@HttpContext.Session.GetString("UsuarioNombre")</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 rounded-3" style="background-color: var(--bs-body-bg); border: 1px solid var(--bs-border-color);">
+                                <small class="text-muted d-block mb-1">Rol</small>
+                                <span class="badge bg-@(isAdmin ? "primary" : "warning") fs-6">@Model.UsuarioRol</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="p-3 rounded-3" style="background-color: var(--bs-body-bg); border: 1px solid var(--bs-border-color);">
+                                <small class="text-muted d-block mb-1">Fecha</small>
+                                <span class="fw-bold">@DateTime.Now.ToString("dd/MM/yyyy")</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3" style="background-color: var(--bs-body-bg); border: 1px solid var(--bs-border-color);">
+                                <small class="text-muted d-block mb-1">Hora</small>
+                                <span class="fw-bold">@DateTime.Now.ToString("h:mm tt")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
