@@ -1,11 +1,21 @@
 using MiPrimeraWebApp.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.HttpOverrides;
 using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+builder.Services.AddRazorPages();
 // ============================================================
 // CONEXIÓN A POSTGRESQL 
 // ============================================================
@@ -124,6 +134,7 @@ app.UseRouting();
 app.UseSession();
 app.UseAntiforgery();
 app.UseAuthorization();
+app.UseForwardedHeaders();
 
 app.MapStaticAssets();
 app.MapRazorPages().WithStaticAssets();
