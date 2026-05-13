@@ -93,11 +93,11 @@ builder.Services.AddResponseCaching();
 var app = builder.Build();
 
 // Aplicar migraciones al iniciar
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//     db.Database.Migrate();
+// }
 
 // Headers de seguridad
 app.Use(async (context, next) =>
