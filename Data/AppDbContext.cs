@@ -17,13 +17,22 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Producto>().ToTable("productos");
-        modelBuilder.Entity<Cliente>().ToTable("clientes");
-        modelBuilder.Entity<Pedido>().ToTable("pedidos");
-        modelBuilder.Entity<ListaDeseo>().ToTable("listas_deseos");
-        modelBuilder.Entity<Empleado>().ToTable("empleados");
-        modelBuilder.Entity<Comentario>().ToTable("comentarios");
+        
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            // Tabla en minúscula
+            var tableName = entityType.GetTableName();
+            if (!string.IsNullOrEmpty(tableName))
+                entityType.SetTableName(tableName.ToLowerInvariant());
 
+            // Columnas en minúscula
+            foreach (var property in entityType.GetProperties())
+            {
+                property.SetColumnName(property.Name.ToLowerInvariant());
+            }
+        }
+
+        
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var property in entityType.GetProperties())
