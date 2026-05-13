@@ -1,37 +1,69 @@
 using MiPrimeraWebApp.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 
 // ============================================================
-// CONEXIÓN A POSTGRESQL - Parseo manual de DATABASE_URL
-// Railway inyecta DATABASE_URL en formato: postgresql://user:pass@host:port/db
-// Npgsql NO entiende ese formato, hay que convertirlo a propiedades
+// CONEXIÓN A POSTGRESQL 
 // ============================================================
 string connectionString;
 
+// 1. Intentar leer DATABASE_URL (Railway la inyecta automáticamente)
 var databaseUrl = builder.Configuration["DATABASE_URL"];
 
 if (!string.IsNullOrEmpty(databaseUrl))
 {
-    // Parsear postgresql://user:pass@host:port/db
-    var uri = new Uri(databaseUrl);
-    var userInfo = uri.UserInfo.Split(':');
-    var user = userInfo[0];
-    var pass = userInfo.Length > 1 ? userInfo[1] : "";
-    var host = uri.Host;
-    var port = uri.Port > 0 ? uri.Port : 5432;
-    var db = uri.AbsolutePath.TrimStart('/');
+    try
+    {
+        // Parsear postgresql://user:pass@host:port/db
+        var uri = new Uri(databaseUrl);
+        var userInfo = uri.UserInfo.Split(':');
+        var user = WebUtility.UrlDecode(userInfo[0]);
+        var pass = userInfo.Length > 1 ? WebUtility.UrlDecode(userInfo[1]) : "";
+        var host = uri.Host;
+        var port = uri.Port > 0 ? uri.Port : 5432;
+        var db = uri.AbsolutePath.TrimStart('/');
 
-    connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=True";
+        connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=True;Timeout=60";
+
+        Console.WriteLine($"✅ PostgreSQL configurado: Host={host}, Port={port}, DB={db}, User={user}");
+    }
+    catch (Exception ex)
+    {
+        throw new InvalidOperationException($"DATABASE_URL tiene formato inválido: {databaseUrl}. Error: {ex.Message}");
+    }
 }
 else
 {
-    // Fallback para desarrollo local
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                       ?? "Host=localhost;Port=5432;Database=app;Username=postgres;Password=postgres";
+    // 2. Fallback: leer de ConnectionStrings:DefaultConnection (para desarrollo local)
+    var fallback = builder.Configuration.GetConnectionString("DefaultConnection");
+
+    if (!string.IsNullOrEmpty(fallback))
+    {
+        // Si el fallback parece SQLite, rechazarlo explícitamente
+        if (fallback.Contains("Data Source=", StringComparison.OrdinalIgnoreCase) || 
+            fallback.Contains(".db", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "❌ ERROR: La variable DATABASE_URL no está definida en Railway y appsettings.json aún tiene SQLite. " +
+                "Solución: Ve al dashboard de Railway → tu servicio .NET → Variables, y asegúrate de que DATABASE_URL exista. " +
+                "Si no existe, agrégala manualmente copiando la URL de Private Network desde el servicio PostgreSQL."
+            );
+        }
+
+        connectionString = fallback;
+        Console.WriteLine("⚠️  Usando DefaultConnection de appsettings.json (modo desarrollo)");
+    }
+    else
+    {
+        throw new InvalidOperationException(
+            "❌ ERROR: No se encontró DATABASE_URL (Railway) ni DefaultConnection (appsettings.json). " +
+            "La app no puede conectarse a la base de datos."
+        );
+    }
 }
 
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connectionString));
