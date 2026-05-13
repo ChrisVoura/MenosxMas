@@ -5,10 +5,34 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 
-// PostgreSQL: usa DATABASE_URL de Railway o fallback local
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                       ?? builder.Configuration["DATABASE_URL"]
+// ============================================================
+// CONEXIÓN A POSTGRESQL - Parseo manual de DATABASE_URL
+// Railway inyecta DATABASE_URL en formato: postgresql://user:pass@host:port/db
+// Npgsql NO entiende ese formato, hay que convertirlo a propiedades
+// ============================================================
+string connectionString;
+
+var databaseUrl = builder.Configuration["DATABASE_URL"];
+
+if (!string.IsNullOrEmpty(databaseUrl))
+{
+    // Parsear postgresql://user:pass@host:port/db
+    var uri = new Uri(databaseUrl);
+    var userInfo = uri.UserInfo.Split(':');
+    var user = userInfo[0];
+    var pass = userInfo.Length > 1 ? userInfo[1] : "";
+    var host = uri.Host;
+    var port = uri.Port > 0 ? uri.Port : 5432;
+    var db = uri.AbsolutePath.TrimStart('/');
+
+    connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=True";
+}
+else
+{
+    // Fallback para desarrollo local
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? "Host=localhost;Port=5432;Database=app;Username=postgres;Password=postgres";
+}
 
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connectionString));
 
@@ -36,14 +60,14 @@ builder.Services.AddResponseCaching();
 
 var app = builder.Build();
 
-// Aplicar migraciones al iniciar (seguro para PostgreSQL con 1 instancia)
-// NOTA: Si ya migraste datos manualmente, comenta esto tras el primer deploy
+// Aplicar migraciones al iniciar
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
 
+// Headers de seguridad
 app.Use(async (context, next) =>
 {
     context.Response.Headers["X-Content-Type-Options"] = "nosniff";
@@ -72,7 +96,7 @@ app.UseAuthorization();
 app.MapStaticAssets();
 app.MapRazorPages().WithStaticAssets();
 
-// === API DE CARRITO (sin cambios) ===
+// === API DE CARRITO ===
 app.MapGet("/api/carrito/count", (HttpContext ctx) => {
     var json = ctx.Session.GetString("Carrito");
     if (string.IsNullOrEmpty(json)) return Results.Ok("0");
