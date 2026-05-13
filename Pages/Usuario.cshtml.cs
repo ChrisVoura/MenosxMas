@@ -51,7 +51,7 @@ namespace MiPrimeraWebApp.Pages
                 Email = emailIngresado,
                 Password = passwordHash,
                 FechaRegistro = DateTime.UtcNow,
-                Rol = "Cliente"
+                Rol = "Administrador"
             };
 
             _db.Clientes.Add(nuevoCliente);

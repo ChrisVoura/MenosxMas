@@ -24,5 +24,5 @@ public  class Cliente
 
     public DateTime? fechaNacimiento { get; set; }
 
-    public string Rol { get; set; } = "Administrador";
+    public string Rol { get; set; } = "Cliente";
 }
