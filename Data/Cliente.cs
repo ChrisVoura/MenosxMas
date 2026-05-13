@@ -14,7 +14,7 @@ public  class Cliente
     required public string Email {get; set; }
 
     required public string Password {get; set; }
-    required public DateTime FechaRegistro {get; set; } = DateTime.Now;
+    required public DateTime FechaRegistro {get; set; } = DateTime.UtcNow;
 
     public string Genero { get; set; } = "No especificado";
 
