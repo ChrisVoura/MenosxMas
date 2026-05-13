@@ -50,7 +50,7 @@ namespace MiPrimeraWebApp.Pages
                 Apellido = apellido,
                 Email = emailIngresado,
                 Password = passwordHash,
-                FechaRegistro = DateTime.Now,
+                FechaRegistro = DateTime.UtcNow,
                 Rol = "Cliente"
             };
 
