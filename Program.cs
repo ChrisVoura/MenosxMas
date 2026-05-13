@@ -5,10 +5,19 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 
-// PostgreSQL: usa DATABASE_URL de Railway o fallback local
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                       ?? builder.Configuration["DATABASE_URL"]
-                       ?? "Host=localhost;Port=5432;Database=app;Username=postgres;Password=postgres";
+// PostgreSQL: usa DATABASE_URL de Railway (formato URL) o fallback local
+var rawConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                          ?? builder.Configuration["DATABASE_URL"]
+                          ?? "Host=localhost;Port=5432;Database=app;Username=postgres;Password=postgres";
+
+// Convert postgresql:// URL to Npgsql key-value format if needed
+var connectionString = rawConnectionString;
+if (rawConnectionString.StartsWith("postgresql://") || rawConnectionString.StartsWith("postgres://"))
+{
+    var uri = new Uri(rawConnectionString);
+    var userInfo = uri.UserInfo.Split(':');
+    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+}
 
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connectionString));
 
